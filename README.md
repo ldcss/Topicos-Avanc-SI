@@ -3,6 +3,8 @@ Repositorio da disciplina da cadeira tópicos avançados em si 3
 ## Equipe:
 - Lucas Daniel Costa da Silva
 - Marcelo Vinicius Bastos
+## Imersão:
+https://docs.google.com/document/d/1zlhTjR9Wi6duA5XqCovOWozqQ5MoFKf3nOadirUJGJA/edit?usp=sharing
 
 # Front: React + TypeScript + Vite
 
