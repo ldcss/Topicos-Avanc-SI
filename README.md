@@ -1,5 +1,8 @@
 # Topicos-Avanc-SI
 Repositorio da disciplina da cadeira tópicos avançados em si 3
+## Equipe:
+- Lucas Daniel Costa da Silva
+- Marcelo Vinicius Bastos
 
 # Front: React + TypeScript + Vite
 
