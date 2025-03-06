@@ -1,34 +1,84 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { GoogleAuthProvider, User, onAuthStateChanged, signInWithPopup } from 'firebase/auth'
+import { doc, setDoc, getFirestore, getDoc, onSnapshot, collection, addDoc, orderBy, query, serverTimestamp } from 'firebase/firestore'
+import { auth } from './firebase'
+import { useState, useEffect } from 'react'
+import Chat from './components/chat/Chat'
+import { ChakraProvider } from '@chakra-ui/react'
+
+const db = getFirestore()
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState<User | null>(null)
+  const [messages, setMessages] = useState<{ id: string; data: any }[]>([])
+  const [newMessage, setNewMessage] = useState('')
 
+  useEffect(() => {
+    const q = query(collection(db, 'messages'), orderBy('timeStamp'))
+    const unsubscribe = onSnapshot(q, snapshot => {
+      setMessages(snapshot.docs.map( doc => ({
+        id: doc.id,
+        data: doc.data()
+      })))
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    onAuthStateChanged(
+      auth,
+      user => {
+        if (user) {
+          setUser(user)
+        } else {
+          setUser(null)
+        }
+      }
+    )
+  }, [])
+
+  const sendMessage = async () => {
+    await addDoc(collection(db, 'messages'), {
+      uid: user?.uid,
+      photoUrl: user?.photoURL,
+      displayName: user?.displayName,
+      text: newMessage,
+      timestamp: serverTimestamp() 
+    })
+  }
+  
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider()
+
+    try {
+      const result = await signInWithPopup(auth, provider)
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <div className='App'>
+        {user ? (
+        <>
+        <div>Logged in as {user.displayName}</div>
+        <input value={newMessage} onChange={e => setNewMessage(e.target.value)} />
+        <button onClick={sendMessage}>Send Message</button>
+        <button onClick={() => auth.signOut()}>Logout</button>
+
+        {
+          messages.map(msg => (
+            <div key={msg.id}>
+              <img src={msg.data.photoUrl} />
+              {msg.data.text}
+            </div>
+          ))
+        }
+        </>
+      ) : (<>
+        <button onClick={handleGoogleLogin}> Login with google </button>
+        </>)}
+        <Chat />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
   )
 }
 
