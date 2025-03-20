@@ -27,9 +27,13 @@ export default function Message({ text, actor }: MessageProps) {
           whiteSpace: 'pre-wrap',
         }}
       >
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {
+          text == 'isLoading' ? (<div className='animate-pulse text-md2 font-medium'>
+          ...
+        </div>) : (<ReactMarkdown remarkPlugins={[remarkGfm]}>
           {text}
-        </ReactMarkdown>
+        </ReactMarkdown>)
+        }
       </div>
     </div>
   );
