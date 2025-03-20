@@ -4,7 +4,6 @@ import { doc, setDoc, getFirestore, getDoc, onSnapshot, collection, addDoc, orde
 import { auth } from './firebase'
 import { useState, useEffect } from 'react'
 import Chat from './components/chat/Chat'
-import { ChakraProvider } from '@chakra-ui/react'
 import Login from './components/login/Login'
 
 const db = getFirestore()

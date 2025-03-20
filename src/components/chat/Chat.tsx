@@ -1,23 +1,20 @@
 import { DeepSeekService } from '@/service/DeepSeekService';
 import { MessageChat } from '@/types/MessageChat';
-import {
-    Button,
-    Flex,
-    Heading,
-    HStack,
-    Input,
-    Stack,
-  } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Message from '../message/Message';
   
   export default function Chat() {
     const [userInputValue, setUserInputValue] = useState<string>('')
     const [messages, setMessages] = useState<MessageChat[]>([])
+    const chatEndRef = useRef<HTMLDivElement>(null);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setUserInputValue(event.target.value);
     };
+    
+    useEffect(() => {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const handleRequest = () => {
       console.log("to no handle")
@@ -38,55 +35,59 @@ import Message from '../message/Message';
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     };
     
-    return (
-      <Flex h="100vh" py={12}>
-        <Flex
-          flexDirection="column"
-          w="2xl"
-          m="auto"
-          h="full"
-          borderWidth="1px"
-          roundedTop="lg"
-          bg={"#FAFAFA"}
-        >
-          <HStack p={4} bg="blue.500">
-            <Heading size="lg" color="white">
-              Recife + Saudável
-            </Heading>
-          </HStack>
-  
-          <Stack
-            px={4}
-            py={8}
-            overflow="auto"
-            flex={1}
-            css={{
-              '&::-webkit-scrollbar': {
-                width: '4px',
-              },
-              '&::-webkit-scrollbar-track': {
-                width: '6px',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: '#d5e3f7',
-                borderRadius: '24px',
-              },
-            }}
-          >
-            {
-              messages.map((message, index) => (
-                <Message key={index} text={message.message} actor={message.actor == "user" ? "user" : "bot"} />
-              ))
-            }
-          </Stack>
-  
-          <HStack p={4} bg="gray.100">
-            <Input bg="white" color="black" placeholder="Enter your text" onChange={handleInputChange} />
-            <Button colorScheme="normal" bg={'white'} border={"#F1F1F1"} onClick={handleRequest}>Send</Button>
-          </HStack>
-        </Flex>
-      </Flex>
-    );
+    return (<div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 p-4">
+      {/* Phone container */}
+      <div className="relative w-[375px] h-[750px] bg-black rounded-[50px] shadow-2xl overflow-hidden border-[14px] border-black">
+        {/* Phone screen */}
+        <div className="relative w-full h-full bg-gray-50 rounded-[40px] flex flex-col pt-6">
+          {/* Header */}
+          <header className="bg-white border-b border-gray-200 px-4 py-3">
+            <div className="flex items-center space-x-3">
+              <i className="fas fa-hospital-symbol text-blue-600 text-2xl"></i>
+              <h1 className="text-base font-semibold text-gray-800">
+                Recife Healthcare
+              </h1>
+            </div>
+          </header>
+
+          {/* Chat messages */}
+          <div className="flex-1 overflow-y-auto px-3 pb-28">
+          {messages.map((msg, index) => (
+ 
+           <Message 
+              key={index} 
+              actor={msg.actor} 
+              text={msg.message} 
+            />
+          ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input area */}
+          <div className="absolute bottom-0 w-full bg-white border-t border-gray-200 px-3 py-3">
+            <div className="flex space-x-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={userInputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRequest()}
+                  placeholder="Pergunte sobre serviços de saúde..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+              <button
+                onClick={handleRequest}
+                className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-sm"
+              >
+                <i className="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   }
 
   const prompt = `

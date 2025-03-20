@@ -1,24 +1,36 @@
-import { Flex, Text } from "@chakra-ui/react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 type MessageProps = {
-    text: string;
-    actor: 'user' | 'bot';
-  };
+  text: string;
+  actor: string;
+};
 
+export default function Message({ text, actor }: MessageProps) {
+  const isUser = actor === 'user';
 
-export default function Message ({ text, actor }: MessageProps) {
-    return (
-      <Flex
-        p={4}
-        bg={actor === 'user' ? 'blue.500' : 'gray.100'}
-        color={actor === 'user' ? 'white' : 'gray.600'}
-        borderRadius="lg"
-        w="fit-content"
-        alignSelf={actor === 'user' ? 'flex-end' : 'flex-start'}
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: isUser ? 'flex-end' : 'flex-start',
+        marginBottom: '8px',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: isUser ? '#4299E1' : '#E2E8F0',
+          color: isUser ? '#FFFFFF' : '#2D3748',
+          borderRadius: '8px',
+          padding: '12px',
+          maxWidth: '70%',
+          whiteSpace: 'pre-wrap',
+        }}
       >
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
-      </Flex>
-    );
-  };
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {text}
+        </ReactMarkdown>
+      </div>
+    </div>
+  );
+}
