@@ -1,10 +1,10 @@
-// import './App.css'
 import { GoogleAuthProvider, User, onAuthStateChanged, signInWithPopup } from 'firebase/auth'
 import { doc, setDoc, getFirestore, getDoc, onSnapshot, collection, addDoc, orderBy, query, serverTimestamp } from 'firebase/firestore'
 import { auth } from './firebase'
 import { useState, useEffect } from 'react'
 import Chat from './components/chat/Chat'
 import Login from './components/login/Login'
+import RoutesUrl from './routes'
 
 const db = getFirestore()
 
@@ -57,26 +57,25 @@ function App() {
     }
   }
   return (
-        <div className='App'>
-        {user ? (
-          <Chat />
-        // <> codigo para salvar o chat no firebase
-        // <div>Logged in as {user.displayName}</div>
-        // <input value={newMessage} onChange={e => setNewMessage(e.target.value)} />
-        // <button onClick={sendMessage}>Send Message</button>
-        // <button onClick={() => auth.signOut()}>Logout</button>
+      //   {user ? (
+      //     <Chat />
+      //   // <> codigo para salvar o chat no firebase
+      //   // <div>Logged in as {user.displayName}</div>
+      //   // <input value={newMessage} onChange={e => setNewMessage(e.target.value)} />
+      //   // <button onClick={sendMessage}>Send Message</button>
+      //   // <button onClick={() => auth.signOut()}>Logout</button>
 
-        // {
-        //   messages.map(msg => (
-        //     <div key={msg.id}>
-        //       <img src={msg.data.photoUrl} />
-        //       {msg.data.text}
-        //     </div>
-        //   ))
-        // }
-        // </>
-      ) : (<Login handleLogin={handleGoogleLogin} />)}
-      </div>
+      //   // {
+      //   //   messages.map(msg => (
+      //   //     <div key={msg.id}>
+      //   //       <img src={msg.data.photoUrl} />
+      //   //       {msg.data.text}
+      //   //     </div>
+      //   //   ))
+      //   // }
+      //   // </>
+      // ) : (<Login handleLogin={handleGoogleLogin} />)}
+        <RoutesUrl />
   )
 }
 
