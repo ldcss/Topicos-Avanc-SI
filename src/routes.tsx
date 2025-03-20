@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/home/Home';
 import Page from './components/page/Page';
+import About from './pages/about-us/About';
+import Credits from './pages/credits/Credits';
 
 export default function RoutesUrl(){
     return (
@@ -13,12 +15,12 @@ export default function RoutesUrl(){
                 } />
                 <Route path="/about" element={
                     <Page>
-                        <h1>About</h1>
+                        <About />
                     </Page>
                 } />
                 <Route path="/credits" element={
                     <Page>
-                        <h1>Credits</h1>
+                        <Credits />
                     </Page>
                 } />
             </Routes>
