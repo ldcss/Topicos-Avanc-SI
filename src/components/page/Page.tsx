@@ -2,7 +2,9 @@ import { BiHeartCircle } from "react-icons/bi";
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Page({children}: {children: JSX.Element | JSX.Element[]}) {
-    const { pathname } = useLocation();
+    var { pathname } = useLocation();
+
+    console.log("pathname", pathname)
     return (
         <div className="min-h-screen bg-gray-50">
             <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -17,7 +19,7 @@ export default function Page({children}: {children: JSX.Element | JSX.Element[]}
                         <div className="flex space-x-8">
                             <Link to="/">
                                 <button
-                                    className={`${pathname == "home" ? "text-blue-600" : "text-gray-600"} hover:text-blue-500 cursor-pointer whitespace-nowrap !rounded-button`}
+                                    className={`${pathname == "/" ? "text-blue-600" : "text-gray-600"} hover:text-blue-500 cursor-pointer whitespace-nowrap !rounded-button`}
                                 >
                                     Home
                                 </button>
@@ -25,7 +27,7 @@ export default function Page({children}: {children: JSX.Element | JSX.Element[]}
                             
                             <Link to="/about">
                                 <button
-                                    className={`${pathname == "about" ? "text-blue-600" : "text-gray-600"} hover:text-blue-500 cursor-pointer whitespace-nowrap !rounded-button`}
+                                    className={`${pathname == "/about" ? "text-blue-600" : "text-gray-600"} hover:text-blue-500 cursor-pointer whitespace-nowrap !rounded-button`}
                                 >
                                     About
                                 </button>
@@ -33,7 +35,7 @@ export default function Page({children}: {children: JSX.Element | JSX.Element[]}
                             
                             <Link to="/credits">
                                 <button
-                                    className={`${pathname == "credits" ? "text-blue-600" : "text-gray-600"} hover:text-blue-500 cursor-pointer whitespace-nowrap !rounded-button`}
+                                    className={`${pathname == "/credits" ? "text-blue-600" : "text-gray-600"} hover:text-blue-500 cursor-pointer whitespace-nowrap !rounded-button`}
                                 >
                                     Credits
                                 </button>
