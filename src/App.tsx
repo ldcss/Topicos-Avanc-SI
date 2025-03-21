@@ -1,8 +1,7 @@
 import { GoogleAuthProvider, User, onAuthStateChanged, signInWithPopup } from 'firebase/auth'
-import { doc, setDoc, getFirestore, getDoc, onSnapshot, collection, addDoc, orderBy, query, serverTimestamp } from 'firebase/firestore'
+import { getFirestore, onSnapshot, collection, orderBy, query } from 'firebase/firestore'
 import { auth } from './firebase'
 import { useState, useEffect } from 'react'
-import Chat from './components/chat/Chat'
 import Login from './components/login/Login'
 import RoutesUrl from './routes'
 
@@ -37,16 +36,7 @@ function App() {
     )
   }, [])
 
-  const sendMessage = async () => {
-    await addDoc(collection(db, 'messages'), {
-      uid: user?.uid,
-      photoUrl: user?.photoURL,
-      displayName: user?.displayName,
-      text: newMessage,
-      timestamp: serverTimestamp() 
-    })
-  }
-  
+
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider()
 
@@ -75,7 +65,9 @@ function App() {
       //   // }
       //   // </>
       // ) : (<Login handleLogin={handleGoogleLogin} />)}
-        <RoutesUrl />
+      user
+      ? <RoutesUrl user={user} />
+      : <Login handleLogin={handleGoogleLogin} />
   )
 }
 

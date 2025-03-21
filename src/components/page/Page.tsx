@@ -1,8 +1,27 @@
 import { BiHeartCircle } from "react-icons/bi";
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { auth } from '../../firebase'; 
+import { User } from 'firebase/auth'; // Import User type
 
-export default function Page({children}: {children: JSX.Element | JSX.Element[]}) {
+interface PageProps {
+  children: JSX.Element | JSX.Element[];
+  user: User | null; // Accept user prop
+}
+
+export default function Page({ children, user }: PageProps) {
     var { pathname } = useLocation();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        auth.signOut()
+          .then(() => {
+            console.log("Signed out successfully!");
+            navigate("/"); 
+          })
+          .catch((error) => {
+            console.error("Error signing out:", error);
+          });
+      };
 
     console.log("pathname", pathname)
     return (
@@ -40,6 +59,14 @@ export default function Page({children}: {children: JSX.Element | JSX.Element[]}
                                     Credits
                                 </button>
                             </Link>
+                            {user && (
+                                <button
+                                onClick={handleLogout}
+                                className="text-gray-600 hover:text-blue-500 cursor-pointer whitespace-nowrap !rounded-button"
+                                >
+                                Logout
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
