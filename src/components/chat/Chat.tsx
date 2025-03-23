@@ -40,8 +40,8 @@ import { prompt, welcomeMsg } from '../utils/defaultMessages';
         setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages];
           updatedMessages[updatedMessages.length - 1] = {
-            ...updatedMessages[updatedMessages.length - 1], // Mantém as outras propriedades da mensagem
-            message: response.data.choices[0].message.content, // Atualiza apenas o conteúdo da mensagem
+            ...updatedMessages[updatedMessages.length - 1],
+            message: response.data.choices[0].message.content, 
           };
           return updatedMessages;
         });
@@ -49,54 +49,87 @@ import { prompt, welcomeMsg } from '../utils/defaultMessages';
     };
 
     const addMessage = (newMessage: MessageChat) => {
-      // Usando a função de atualização para garantir que o estado seja atualizado corretamente
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     };
     
-    return (<div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 p-4">
-      {/* Phone container */}
-      <div className="relative w-[375px] h-[750px] bg-black rounded-[50px] shadow-2xl overflow-hidden border-[14px] border-black">
-        {/* Phone screen */}
-        <div className="relative w-full h-full bg-gray-50 rounded-[40px] flex flex-col pt-6">
-          {/* Header */}
-          <header className="bg-white border-b border-gray-200 px-3 py-3 relative w-full z-50">
-            <div className="flex items-center space-x-3">
-              <i className="fas fa-hospital-symbol text-blue-600 text-2xl"></i>
-              <h1 className="text-base font-semibold text-gray-800">
-                Welfare.c
-              </h1>
+    return (
+      <div className="flex flex-col md:flex-row gap-4 min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 p-4">
+        {/* Painel esquerdo (menor) */}
+        <div className="bg-white rounded-md shadow-md p-4 text-sm text-gray-700 md:w-1/4 lg:w-1/5 mt-4 md:mt-16">
+          <h2 className="font-bold text-lg mb-2">Como usar o Assistente de Saúde</h2>
+          <ul className="list-disc ml-4 mb-4 space-y-1">
+            <li>
+              <strong>Converse com a IA</strong>: Digite suas dúvidas ou preocupações sobre saúde na caixa de mensagens.
+            </li>
+            <li>
+              <strong>Encontre Serviços de Saúde</strong>: Obtenha informações sobre hospitais, clínicas e especialistas próximos.
+            </li>
+            <li>
+              <strong>Serviços de Emergência</strong>: Use o botão de Emergência SOS para assistência imediata.
+            </li>
+            <li>
+              <strong>Ações Rápidas</strong>: Use os botões de ação rápida para perguntas comuns.
+            </li>
+          </ul>
+          <div className="bg-blue-50 p-2 rounded-md border border-blue-200">
+            <h3 className="font-semibold">Aviso Importante</h3>
+            <p className="text-xs">
+              Para emergências com risco de vida, sempre ligue para 192 imediatamente ou use o botão de Emergência SOS.
+            </p>
+          </div>
+        </div>
+    
+        {/* Contêiner de Chat (também menor) */}
+        <div className="md:w-3/4 lg:w-4/5 bg-white rounded-md shadow-2xl overflow-hidden flex flex-col mt-4 md:mt-16">
+          {/* Cabeçalho do chat */}
+          <header className="flex justify-between items-center px-4 py-2 border-b border-gray-200 bg-white">
+            <div className="flex items-center space-x-2">
+              <h1 className="font-semibold text-gray-800">Recife Healthcare</h1>
+              <span className="text-green-500 text-xs">● Online</span>
             </div>
+            <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm">
+              Emergência SOS
+            </button>
           </header>
-
-          {/* Chat messages */}
-          <div className="flex-1 overflow-y-auto px-3 pb-28">
-          {messages.map((msg, index) => (
- 
-           <Message 
-              key={index} 
-              actor={msg.actor} 
-              text={msg.message}
-            />
-          ))}
+    
+          {/* Área de mensagens */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 text-sm">
+            {messages.map((msg, index) => (
+              <Message key={index} actor={msg.actor} text={msg.message} />
+            ))}
             <div ref={chatEndRef} />
           </div>
-
-          {/* Input area */}
-          <div className="absolute bottom-0 w-full bg-white border-t border-gray-200 px-3 py-3">
-            <div className="flex space-x-2">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={userInputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={(e) => e.key === 'Enter' && handleRequest()}
-                  placeholder="Pergunte sobre serviços de saúde..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-              </div>
+    
+          {/* Botões de ações rápidas */}
+          <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex flex-wrap gap-2">
+            <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md">
+              Encontrar hospital mais próximo
+            </button>
+            <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md">
+              Serviços de emergência
+            </button>
+            <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md">
+              Especialistas disponíveis
+            </button>
+            <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md">
+              Horários de funcionamento
+            </button>
+          </div>
+    
+          {/* Área de entrada de mensagem */}
+          <div className="px-4 py-3 border-t border-gray-200 bg-white">
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={userInputValue}
+                onChange={handleInputChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleRequest()}
+                placeholder="Pergunte sobre serviços de saúde..."
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
               <button
                 onClick={handleRequest}
-                className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 text-sm"
+                className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm flex items-center justify-center"
               >
                 <FaPaperPlane />
               </button>
@@ -104,6 +137,5 @@ import { prompt, welcomeMsg } from '../utils/defaultMessages';
           </div>
         </div>
       </div>
-    </div>
-  );
+    );    
   }
