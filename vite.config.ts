@@ -17,6 +17,6 @@ export default defineConfig({
       }
     }
   } : undefined,
-  base: process.env.VITE_BASE_PATH || '/',
+  base: '/',
 },
 )
