@@ -4,6 +4,8 @@ import { DeepSeekResponse } from '@/types/DeepSeekResponse';
 
 export class DeepSeekService {
   static async getResponse(message: String): Promise<AxiosResponse<DeepSeekResponse>> {
+    console.log('ambiente', process.env.NODE_ENV)
+    console.log('apiKey', import.meta.env.VITE_API_KEY)
     const headers = {
       Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
       'Content-Type': 'application/json',
@@ -14,8 +16,6 @@ export class DeepSeekService {
     }, {
       headers: headers
     })
-    console.log('ambiente', process.env.NODE_ENV)
-    console.log('apiKey', import.meta.env.VITE_API_KEY)
     console.log('baseUrl', response.config.baseURL)
     console.log('url', response.config.url)
     return response;
