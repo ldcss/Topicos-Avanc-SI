@@ -1,4 +1,3 @@
-import React from 'react';
 import stickerMedicina from '../../assets/sticker medicina .png';
 
 interface LoginProps {

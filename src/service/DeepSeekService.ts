@@ -5,7 +5,7 @@ import { DeepSeekResponse } from '@/types/DeepSeekResponse';
 export class DeepSeekService {
   static async getResponse(message: String): Promise<AxiosResponse<DeepSeekResponse>> {
     const headers = {
-      Authorization: `Bearer ${import.meta.env.VITE_API_KEY}`,
+      Authorization: `Bearer ${import.meta.env.MODE == 'development' ? import.meta.env.VITE_API_KEY : process.env.VITE_API_KEY}`,
       'Content-Type': 'application/json',
     };
     const response = await api.post('/v1/chat/completions', {
