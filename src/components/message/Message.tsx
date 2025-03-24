@@ -19,21 +19,21 @@ export default function Message({ text, actor }: MessageProps) {
     >
       <div
         style={{
-          backgroundColor: isUser ? '#4299E1' : '#E2E8F0',
-          color: isUser ? '#FFFFFF' : '#2D3748',
+          backgroundColor: isUser ? '#155dfc' : '#6a7282',
+          color: '#ffffff',
           borderRadius: '8px',
           padding: '12px',
           maxWidth: '70%',
           whiteSpace: 'pre-wrap',
         }}
       >
-        {
-          text == 'isLoading' ? (<div className='animate-pulse text-md2 font-medium'>
-          ...
-        </div>) : (<ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {text}
-        </ReactMarkdown>)
-        }
+        {text === 'isLoading' ? (
+          <div className="animate-pulse text-md2 font-medium">...</div>
+        ) : (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {text}
+          </ReactMarkdown>
+        )}
       </div>
     </div>
   );
