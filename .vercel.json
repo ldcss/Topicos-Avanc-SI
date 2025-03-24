@@ -15,6 +15,9 @@
       "destination": "https://openrouter.ai/api/:path*"
     }
   ],
+  "redirect": [
+
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
