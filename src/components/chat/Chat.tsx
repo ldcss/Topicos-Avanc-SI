@@ -2,53 +2,97 @@ import { DeepSeekService } from '@/service/DeepSeekService';
 import { useEffect, useRef, useState } from 'react';
 import Message from '../message/Message';
 import { FaPaperPlane } from "react-icons/fa";
-import { prompt, welcomeMsg } from '../utils/defaultMessages';
+import { prompt } from '../utils/defaultMessages';
 import { addDoc, collection, getFirestore, onSnapshot, orderBy, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { MessageModel } from '@/types/MessageModel';
 import { v4 as uuidv4 } from 'uuid';
 import { auth } from '@/firebase';
-import { MessageChat } from '@/types/MessageChat';
+
+const db = getFirestore()
   
 export default function Chat() {
-  const [userInputValue, setUserInputValue] = useState<string>('');
-  const [messages, setMessages] = useState<MessageChat[]>([]);
+  const [userInputValue, setUserInputValue] = useState<string>('')
+  const [messages, setMessages] = useState<MessageModel[]>([])
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUserInputValue(event.target.value);
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      const user = auth.currentUser;
+      if (user && user.email) {
+        setUserEmail(user.email);
+      }
   };
-    
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  fetchUserEmail();
+}, []);
 
-  useEffect(() => {
-    if (messages.length === 0) {
-      const isLoadingMessage = { actor: "bot", message: welcomeMsg };
-      addMessage(isLoadingMessage);
+const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  setUserInputValue(event.target.value);
+};
+
+useEffect(() => {
+  chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+}, [messages]);
+
+useEffect(() => {
+  if (!userEmail) return;
+
+  const q = query(
+    collection(db, 'messages'), 
+    where('userEmail', '==', userEmail),
+    orderBy('createdAt')
+  );
+
+  const unsub = onSnapshot(
+    q,
+    snapshot => {
+      setMessages(snapshot.docs.map(doc => ({
+        ...doc.data() as MessageModel
+      })))
     }
-  }, []);
+  );
 
-  const handleRequest = () => {
-    const newMessage = { actor: "user", message: userInputValue };
-    addMessage(newMessage);
-    setUserInputValue('');
+  return unsub;
+}, [userEmail]);
 
-    const isLoadingMessage = { actor: "bot", message: "isLoading" };
-    addMessage(isLoadingMessage);
+const insertUserMessage = async () => {
+  if (!userEmail) {
+    console.error("Usuário não autenticado");
+    return;
+  }
 
-    DeepSeekService.getResponse(prompt + userInputValue).then(response => {
-      console.log(response.data.choices[0].message.content);
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages[updatedMessages.length - 1] = {
-          ...updatedMessages[updatedMessages.length - 1],
-          message: response.data.choices[0].message.content,
-        };
-        return updatedMessages;
-      });
+    await addDoc(collection(db, 'messages'), {
+      id: uuidv4(),
+      actor: "user",
+      message: userInputValue,
+      userEmail: userEmail,
+      createdAt: serverTimestamp()
+    })
+
+    setUserInputValue('')
+
+    const loadingDocRef = await addDoc(collection(db, 'messages'), {
+      id: uuidv4(),
+      actor: "bot",
+      message: "...",
+      userEmail: userEmail, 
+      createdAt: serverTimestamp()
     });
-  };
+
+    try {
+      const response = await DeepSeekService.getResponse(prompt + userInputValue);
+      const botResponse = response.data.choices[0].message.content;
+      
+      await updateDoc(loadingDocRef, {
+        message: botResponse
+      });
+    } catch (error) {
+      await updateDoc(loadingDocRef, {
+        message: "Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente"
+      });
+      console.error("Erro ao obter resposta:", error);
+    }
+  }
 
   // New function: Locate position and find the nearest hospital.
   const handleFindNearestHospital = () => {
@@ -57,21 +101,22 @@ export default function Chat() {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
         const hospitalMessage = `Sua localização: lat ${latitude.toFixed(4)}, long ${longitude.toFixed(4)}. O hospital mais próximo é o Hospital Central, a 2 km de distância.`;
-        const hospitalMsg = { actor: "bot", message: hospitalMessage };
-        addMessage(hospitalMsg);
+        await addDoc(collection(db, 'messages'), {
+          id: uuidv4(),
+          actor: "bot",
+          message: hospitalMessage,
+          userEmail: userEmail,
+          createdAt: serverTimestamp()
+        })
       },
       (error) => {
         console.error(error);
         alert("Não foi possível obter sua localização.");
       }
     );
-  };
-
-  const addMessage = (newMessage: MessageChat) => {
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
   };
     
   return (
@@ -148,12 +193,12 @@ export default function Chat() {
               type="text"
               value={userInputValue}
               onChange={handleInputChange}
-              onKeyDown={(e) => e.key === 'Enter' && handleRequest()}
+              onKeyDown={(e) => e.key === 'Enter' && insertUserMessage()}
               placeholder="Pergunte sobre serviços de saúde..."
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
             <button
-              onClick={handleRequest}
+              onClick={insertUserMessage}
               className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm flex items-center justify-center"
             >
               <FaPaperPlane />
