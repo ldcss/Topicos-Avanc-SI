@@ -55,7 +55,12 @@ useEffect(() => {
   return unsub;
 }, [userEmail]);
 
-const insertUserMessage = async () => {
+const insertUserMessage = async (customMessage?: string) => {
+
+  const messageText = customMessage ?? userInputValue;
+  
+  if (!messageText) return; 
+
   if (!userEmail) {
     console.error("Usuário não autenticado");
     return;
@@ -69,7 +74,9 @@ const insertUserMessage = async () => {
       createdAt: serverTimestamp()
     })
 
-    setUserInputValue('')
+    if (!customMessage) {
+      setUserInputValue('');
+    }
 
     const loadingDocRef = await addDoc(collection(db, 'messages'), {
       id: uuidv4(),
@@ -94,31 +101,91 @@ const insertUserMessage = async () => {
     }
   }
 
-  // New function: Locate position and find the nearest hospital.
-  const handleFindNearestHospital = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocalização não é suportada pelo seu navegador.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const hospitalMessage = `Sua localização: lat ${latitude.toFixed(4)}, long ${longitude.toFixed(4)}. O hospital mais próximo é o Hospital Central, a 2 km de distância.`;
-        await addDoc(collection(db, 'messages'), {
-          id: uuidv4(),
-          actor: "bot",
-          message: hospitalMessage,
-          userEmail: userEmail,
-          createdAt: serverTimestamp()
-        })
-      },
-      (error) => {
-        console.error(error);
-        alert("Não foi possível obter sua localização.");
-      }
-    );
-  };
+// Função para calcular a distância entre dois pontos (em metros) usando a fórmula de Haversine.
+const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371e3; // Raio da Terra em metros
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const findNearestHospital = async (latitude: number, longitude: number): Promise<{ name: string; distance: number } | null> => {
+  const radius = 5000;
+  const query = `
+    [out:json];
+    node
+      [amenity=hospital]
+      (around:${radius},${latitude},${longitude});
+    out;
+  `;
+  const url = "https://overpass-api.de/api/interpreter?data=" + encodeURIComponent(query);
+  
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
     
+    if (!data.elements || data.elements.length === 0) {
+      return null;
+    }
+    
+    // Seleciona o hospital mais próximo
+    const nearest = data.elements.reduce((prev: any, current: any) => {
+      const distancePrev = haversineDistance(latitude, longitude, prev.lat, prev.lon);
+      const distanceCurrent = haversineDistance(latitude, longitude, current.lat, current.lon);
+      return distanceCurrent < distancePrev ? current : prev;
+    });
+    
+    const nearestDistance = haversineDistance(latitude, longitude, nearest.lat, nearest.lon);
+    
+    return {
+      name: nearest.tags?.name || "Hospital sem nome",
+      distance: nearestDistance
+    };
+  } catch (error) {
+    console.error("Erro ao buscar hospitais:", error);
+    return null;
+  }
+};
+
+const handleFindNearestHospital = () => {
+  if (!navigator.geolocation) {
+    alert("Geolocalização não é suportada pelo seu navegador.");
+    return;
+  }
+  
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      const hospital = await findNearestHospital(latitude, longitude);
+      let hospitalMessage = "";
+      
+      if (hospital) {
+        hospitalMessage = `Baseado na sua localização o hospital mais próximo é o ${hospital.name}, a ${(hospital.distance / 1000).toFixed(2)} km de distância.`;
+      } else {
+        hospitalMessage = "Não foi possível encontrar um hospital próximo.";
+      }
+      
+      await addDoc(collection(db, 'messages'), {
+        id: uuidv4(),
+        actor: "bot",
+        message: hospitalMessage,
+        userEmail: userEmail,
+        createdAt: serverTimestamp()
+      });
+    },
+    (error) => {
+      console.error("Erro ao obter localização:", error);
+      alert("Não foi possível obter sua localização.");
+    }
+  );
+};
+
   return (
     <div className="flex flex-col md:flex-row gap-4 min-h-screen bg-gradient-to-br from-[#009eb0] to-[#101828] p-4">
       {/* Left Panel */}
@@ -154,9 +221,6 @@ const insertUserMessage = async () => {
             <h1 className="font-semibold text-gray-800">Recife Healthcare</h1>
             <span className="text-green-500 text-xs">● Online</span>
           </div>
-          <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm">
-            Emergência SOS
-          </button>
         </header>
   
         {/* Messages Area */}
@@ -169,23 +233,32 @@ const insertUserMessage = async () => {
   
         {/* Quick Action Buttons */}
         <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex flex-wrap gap-2">
-          <button
-            onClick={handleFindNearestHospital}
-            className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md"
-          >
-            Encontrar hospital mais próximo
-          </button>
-          <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md">
-            Serviços de emergência
-          </button>
-          <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md">
-            Especialistas disponíveis
-          </button>
-          <button className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md">
-            Horários de funcionamento
-          </button>
-        </div>
-  
+  <button
+    onClick={handleFindNearestHospital}
+    className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md"
+  >
+    Encontrar hospital mais próximo
+  </button>
+  <button
+    onClick={() => setUserInputValue("Estou gripado")}
+    className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md"
+  >
+    Estou gripado
+  </button>
+  <button
+    onClick={() => setUserInputValue("Estou com dor de cabeça")}
+    className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md"
+  >
+    Estou com dor de cabeça
+  </button>
+  <button
+    onClick={() => setUserInputValue("Tive um acidente grave")}
+    className="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-2 rounded-md"
+  >
+    Tive um acidente grave
+  </button>
+</div>
+
         {/* Message Input Area */}
         <div className="px-4 py-3 border-t border-gray-200 bg-white">
           <div className="flex items-center space-x-2">
@@ -197,12 +270,12 @@ const insertUserMessage = async () => {
               placeholder="Pergunte sobre serviços de saúde..."
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
-            <button
-              onClick={insertUserMessage}
-              className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm flex items-center justify-center"
-            >
-              <FaPaperPlane />
-            </button>
+          <button
+            onClick={() => insertUserMessage()}
+            className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm flex items-center justify-center"
+          >
+            <FaPaperPlane />
+          </button>
           </div>
         </div>
       </div>

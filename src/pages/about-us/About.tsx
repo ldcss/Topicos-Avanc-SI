@@ -1,6 +1,6 @@
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import FotoLuquinhas from '../../assets/FotoLuquinhas.jpg';
-import aquelaFoto from '../../assets/aquelaFoto.jpg';
+import aquelaFoto from '../../assets/FotoQeuToGatinho.jpg';
 
 export default function About() {
   return (
