@@ -1,7 +1,7 @@
-import { BiHeartCircle } from "react-icons/bi";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase'; 
 import { User } from 'firebase/auth';
+import { TbHealthRecognition } from "react-icons/tb";
 
 interface PageProps {
   children: JSX.Element | JSX.Element[];
@@ -29,7 +29,7 @@ export default function Page({ children, user }: PageProps) {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <BiHeartCircle />
+              <TbHealthRecognition color='blue'/>
               <span className="font-bold text-xl text-[#155dfc]">Welfare.c</span>
             </div>
             <div className="flex space-x-8">
